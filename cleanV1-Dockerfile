@@ -1,0 +1,31 @@
+FROM "php:5.6.38-fpm-alpine3.8"
+LABEL maintainer="yanguang.wang@nexusguard.com"
+
+# 
+RUN docker-php-ext-install bcmath calendar dba exif mysql mysqli pcntl pdo_mysql shmop sockets sysvmsg sysvsem sysvshm \
+
+# alpine pkgs 
+&&  apk add --update php5-wddx php5-xmlrpc php5-xsl php5-zip php5-bz2 php5-gd php5-gettext php5-gmp \
+        && docker-php-ext-enable /usr/lib/php5/modules/wddx.so \ 
+        && docker-php-ext-enable /usr/lib/php5/modules/xmlrpc.so \ 
+        && docker-php-ext-enable /usr/lib/php5/modules/xsl.so \ 
+#        && docker-php-ext-enable /usr/lib/php5/modules/zip.so \ 
+        && docker-php-ext-enable /usr/lib/php5/modules/bz2.so \ 
+        && docker-php-ext-enable /usr/lib/php5/modules/gd.so \ 
+        && docker-php-ext-enable /usr/lib/php5/modules/gettext.so \ 
+        && docker-php-ext-enable /usr/lib/php5/modules/gmp.so \
+
+# extra lib so needed
+&&  apk add --no-cache libxml2-dev php5-soap libmcrypt-dev libmcrypt\
+        && docker-php-ext-configure mcrypt \
+        && docker-php-ext-install mcrypt soap\
+        && apk del --purge libmcrypt-dev \
+
+# phpize 
+&& apk add --no-cache openssl-dev \
+       && apk add --no-cache --virtual .phpize_deps \
+           $PHPIZE_DEPS \
+           autoconf \
+       && pecl install redis-4.0.1 igbinary mongo \
+       && docker-php-ext-enable redis igbinary mongo \
+       && apk del .phpize_deps
